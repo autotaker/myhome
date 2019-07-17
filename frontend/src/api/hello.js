@@ -1,8 +1,12 @@
 export default {
-  hello(callback) {
+  hello () {
     return fetch('http://localhost:3000/', {
+      method: 'GET'
+    }).then(response => response.json())
+  },
+  dbtest () {
+    return fetch('http://localhost:3000/dbtest', {
       method: 'GET'
     }).then(response => response.json())
   }
 }
-

@@ -15,7 +15,7 @@ export default {
   },
   watch: {
     msg: {
-      handler() {
+      handler () {
         hello.hello().then(data => {
           this.msg = 'Message sent from API Server:' + data.message
         }).catch(error => console.error('Error:', error))

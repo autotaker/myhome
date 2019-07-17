@@ -18,21 +18,24 @@ import Database.Persist
 import Database.Persist.TH
 import Control.Monad.Logger
 import Data.Text.Lazy(Text)
+import MyHome.Schema
+import MyHome.Form
+import Control.Monad
 
-
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Hello json
-    message String
-|]
 
 scottyMain :: Pool SqlBackend -> Scotty.ScottyM ()
 scottyMain backendPool = do
-   Scotty.get "/" $ do
-       Scotty.json $ Hello "Hello World!"
-   Scotty.get "/dbtest" $ do
-       msg <- liftIO $ flip runSqlPool backendPool $ do
-           map entityVal <$> selectList [] []
-       Scotty.json $ (msg :: [Hello])
+    Scotty.get "/" $ do
+        Scotty.json $ Hello "Hello World!"
+    Scotty.get "/dbtest/select" $ do
+        msg <- liftIO $ flip runSqlPool backendPool $ do
+            map entityVal <$> selectList [] []
+        Scotty.json $ (msg :: [Hello])
+    Scotty.post "/dbtest/insert" $ do
+        HelloForm{message = msg} <- Scotty.jsonData
+        liftIO $ flip runSqlPool backendPool $ do
+            void $ insert (Hello msg)
+
 
 main :: IO ()
 main = do

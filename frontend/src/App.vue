@@ -4,6 +4,7 @@
       <ul>
         <router-link tag="li" to="/" exact> <a><strong>MyHome</strong></a></router-link>
         <router-link tag="li" to="/hello" exact> <a>Hello</a></router-link>
+        <router-link tag="li" to="/dbtest" exact> <a>DBTest</a></router-link>
       </ul>
     </nav>
     <router-view/>
