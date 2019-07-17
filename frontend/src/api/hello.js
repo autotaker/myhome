@@ -5,7 +5,7 @@ export default {
     }).then(response => response.json())
   },
   dbtest () {
-    return fetch('http://localhost:3000/dbtest', {
+    return fetch('http://localhost:3000/dbtest/select', {
       method: 'GET'
     }).then(response => response.json())
   }

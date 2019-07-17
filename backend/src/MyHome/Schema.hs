@@ -10,7 +10,6 @@ module MyHome.Schema(
     migrateAll
   , Hello(..))where
 
-import qualified Web.Scotty as Scotty
 import Data.Aeson hiding (json)
 import Data.Pool
 import GHC.Generics
