@@ -13,3 +13,12 @@ instance ToJSON HelloForm where
     toEncoding = genericToEncoding defaultOptions
 
 instance FromJSON HelloForm
+
+data LoginForm = LoginForm { username :: Text, password :: Text }
+    derving(Show, Eq, Ord, Generic)
+
+instance ToJSON LoginForm
+    toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON LoginForm
+
