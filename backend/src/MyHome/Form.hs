@@ -15,9 +15,9 @@ instance ToJSON HelloForm where
 instance FromJSON HelloForm
 
 data LoginForm = LoginForm { username :: Text, password :: Text }
-    derving(Show, Eq, Ord, Generic)
+    deriving(Show, Eq, Ord, Generic)
 
-instance ToJSON LoginForm
+instance ToJSON LoginForm where
     toEncoding = genericToEncoding defaultOptions
 
 instance FromJSON LoginForm

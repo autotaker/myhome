@@ -18,8 +18,14 @@ import Database.Persist.MySQL
 import Database.Persist
 import Database.Persist.TH
 import Data.Text.Lazy(Text)
+import Data.ByteString(ByteString)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Hello json
     message Text
+
+Auth
+    Id
+    username Text sqltype=varchar(255)
+    password ByteString sqltype=char(60)
 |]

@@ -27,17 +27,17 @@ import Control.Monad
 data MySession = EmptySession
 data MyAppState = DummyAppState 
 
-scottyMain :: Pool SqlBackend -> Spock.SpockM () MySession MyAppState ()
-scottyMain backendPool = do
+scottyMain :: Spock.SpockM SqlBackend MySession MyAppState ()
+scottyMain = do
     Spock.get "/" $ do
         Spock.json $ Hello "Hello World!"
     Spock.get "/dbtest/select" $ do
-        msg <- liftIO $ flip runSqlPool backendPool $ do
+        msg <- Spock.runQuery $ \conn -> flip runSqlConn conn $
             map entityVal <$> selectList [] []
         Spock.json $ (msg :: [Hello])
     Spock.post "/dbtest/insert" $ do
         HelloForm{message = msg} <- Spock.jsonBody'
-        liftIO $ flip runSqlPool backendPool $ do
+        Spock.runQuery $ \conn -> flip runSqlConn conn $
             void $ insert (Hello msg)
 
 
@@ -46,6 +46,6 @@ main = do
     let info = mkMySQLConnectInfo "127.0.0.1" "myhome" "myhome" "myhome_test"
     pool <- runStdoutLoggingT $ createMySQLPool info 20
     runStdoutLoggingT $ withMySQLConn info (runSqlConn (runMigration migrateAll))
-    spockCfg <- Spock.defaultSpockCfg EmptySession Spock.PCNoDatabase DummyAppState
-    Spock.runSpock 3000 $ fmap (logStdout.) $ Spock.spock spockCfg (scottyMain pool)
+    spockCfg <- Spock.defaultSpockCfg EmptySession (Spock.PCPool pool) DummyAppState
+    Spock.runSpock 3000 $ fmap (logStdout.) $ Spock.spock spockCfg scottyMain
        
