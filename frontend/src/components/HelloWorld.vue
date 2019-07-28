@@ -18,7 +18,7 @@ export default {
       handler () {
         hello.hello().then(data => {
           this.msg = 'Message sent from API Server:' + data.message
-        }).catch(error => console.error('Error:', error))
+        })
       },
       immediate: true
     }

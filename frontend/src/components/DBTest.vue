@@ -30,7 +30,7 @@ export default {
     fetchData () {
       hello.dbtest().then(data => {
         this.items = data
-      }).catch(error => console.error('Error:', error))
+      })
     }
   }
 }
@@ -45,6 +45,8 @@ h1, h2 {
   border: solid;
   border-color: #000000;
   display: block;
+  margin-left: 60px;
+  margin-right: 60px;
 }
 .dbtest-content{
   display: flex;
