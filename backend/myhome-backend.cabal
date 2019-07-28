@@ -20,6 +20,7 @@ library
   exposed-modules: MyHome.Main
                  , MyHome.Schema
                  , MyHome.Form
+                 , MyHome.Logic
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0
@@ -36,6 +37,7 @@ library
                      , monad-logger
                      , text
                      , bytestring
+                     , bcrypt ^>= 0.0.11
   hs-source-dirs:      src
   default-language:    Haskell2010
 

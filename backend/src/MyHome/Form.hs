@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-module MyHome.Form(HelloForm(..)) where
+module MyHome.Form(HelloForm(..), LoginForm(..)) where
 
 import Data.Aeson
-import Data.Text.Lazy(Text) 
+import qualified Data.Text.Lazy as Lazy
+import qualified Data.Text as Strict
 import GHC.Generics
 
-data HelloForm = HelloForm { message :: Text }
+data HelloForm = HelloForm { message :: !Lazy.Text }
     deriving(Show, Eq, Ord, Generic)
 
 instance ToJSON HelloForm where
@@ -14,7 +15,7 @@ instance ToJSON HelloForm where
 
 instance FromJSON HelloForm
 
-data LoginForm = LoginForm { username :: Text, password :: Text }
+data LoginForm = LoginForm { username :: !Strict.Text, password :: !Strict.Text }
     deriving(Show, Eq, Ord, Generic)
 
 instance ToJSON LoginForm where

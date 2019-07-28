@@ -8,7 +8,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module MyHome.Schema(
     migrateAll
-  , Hello(..))where
+  , Hello(..)
+  , Auth(..)
+  , Unique(UniqueUsername))where
 
 import Data.Aeson hiding (json)
 import Data.Pool
@@ -17,15 +19,17 @@ import Control.Monad.IO.Class
 import Database.Persist.MySQL
 import Database.Persist
 import Database.Persist.TH
-import Data.Text.Lazy(Text)
+import qualified Data.Text.Lazy as Lazy
+import qualified Data.Text as Strict
 import Data.ByteString(ByteString)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Hello json
-    message Text
+    message Lazy.Text
 
 Auth
-    Id
-    username Text sqltype=varchar(255)
+    username Strict.Text sqltype=varchar(255)
     password ByteString sqltype=char(60)
+    Primary username
+    UniqueUsername username
 |]

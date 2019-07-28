@@ -14,6 +14,8 @@ import Data.Aeson hiding (json)
 import Data.Pool
 import GHC.Generics
 import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Control.Monad.Except
 import Database.Persist.MySQL
 import Database.Persist
 import Database.Persist.TH
@@ -22,10 +24,14 @@ import Data.Text.Lazy(Text)
 import Network.Wai.Middleware.RequestLogger
 import MyHome.Schema
 import MyHome.Form
+import MyHome.Logic
 import Control.Monad
 
 data MySession = EmptySession
 data MyAppState = DummyAppState 
+
+runDB :: ReaderT SqlBackend IO a -> Spock.SpockAction SqlBackend MySession MyAppState a
+runDB = Spock.runQuery . runSqlConn
 
 scottyMain :: Spock.SpockM SqlBackend MySession MyAppState ()
 scottyMain = do
@@ -37,9 +43,24 @@ scottyMain = do
         Spock.json $ (msg :: [Hello])
     Spock.post "/dbtest/insert" $ do
         HelloForm{message = msg} <- Spock.jsonBody'
-        Spock.runQuery $ \conn -> flip runSqlConn conn $
-            void $ insert (Hello msg)
-
+        runDB $ void $ insert (Hello msg)
+    Spock.post "/auth/signin" $ do
+        form <- Spock.jsonBody'
+        mAuthEntity <- runDB $ getBy (UniqueUsername $ username form)
+        case mAuthEntity of
+            Nothing -> Spock.json $ ("No such user" :: Text)
+            Just (Entity _ auth) | validatePassword form auth -> do
+                Spock.json $ "Hello, " <> authUsername auth 
+            Just _ -> Spock.json $ ("Invalid password" :: Text)
+    Spock.post "/auth/signup" $ do
+        form <- Spock.jsonBody'
+        salt <- liftIO genSalt
+        let mauth = runExcept (hashPassword form salt)
+        case mauth of
+            Left err -> Spock.json $ show err
+            Right auth -> do
+                    runDB $ insert auth
+                    Spock.json $ "Succeeded, " <> authUsername auth 
 
 main :: IO ()
 main = do
