@@ -19,6 +19,7 @@ import Database.Persist
 import Database.Persist.TH
 import Control.Monad.Logger
 import Data.Text.Lazy(Text)
+import Network.Wai.Middleware.RequestLogger
 import MyHome.Schema
 import MyHome.Form
 import Control.Monad
@@ -46,5 +47,5 @@ main = do
     pool <- runStdoutLoggingT $ createMySQLPool info 20
     runStdoutLoggingT $ withMySQLConn info (runSqlConn (runMigration migrateAll))
     spockCfg <- Spock.defaultSpockCfg EmptySession Spock.PCNoDatabase DummyAppState
-    Spock.runSpock 3000 $ (Spock.spock spockCfg (scottyMain pool))
+    Spock.runSpock 3000 $ fmap (logStdout.) $ Spock.spock spockCfg (scottyMain pool)
        
