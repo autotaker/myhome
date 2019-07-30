@@ -10,7 +10,8 @@ module MyHome.Schema(
     migrateAll
   , Hello(..)
   , Auth(..)
-  , Unique(UniqueUsername))where
+  , Unique(UniqueUsername)
+  , deleteAll)where
 
 import Data.Aeson hiding (json)
 import Data.Pool
@@ -19,6 +20,7 @@ import Control.Monad.IO.Class
 import Database.Persist.MySQL
 import Database.Persist
 import Database.Persist.TH
+import Control.Monad.Reader
 import qualified Data.Text.Lazy as Lazy
 import qualified Data.Text as Strict
 import Data.ByteString(ByteString)
@@ -33,3 +35,8 @@ Auth
     Primary username
     UniqueUsername username
 |]
+
+deleteAll :: MonadIO m => ReaderT SqlBackend m ()
+deleteAll = do
+    deleteWhere ([] :: [Filter Hello])
+    deleteWhere ([] :: [Filter Auth])

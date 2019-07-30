@@ -21,6 +21,8 @@ library
                  , MyHome.Schema
                  , MyHome.Form
                  , MyHome.Logic
+                 , MyHome.Service
+                 , MyHome.Type
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.12.0.0
@@ -34,9 +36,12 @@ library
                      , persistent-mysql-haskell ^>= 0.5.2
                      , persistent-template ^>= 2.6.0
                      , wai-extra ^>= 3.0.26
+                     , exceptions
                      , monad-logger
                      , text
                      , bytestring
+                     , wai
+                     , unliftio-core
                      , bcrypt ^>= 0.0.11
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -49,3 +54,17 @@ executable myhome-backend
                      , myhome-backend
   hs-source-dirs:      app 
   default-language:    Haskell2010
+
+test-suite app-test
+    build-depends: Spock ^>= 0.13.0.0
+                 , base ^>= 4.12.0.0
+                 , hspec
+                 , hspec-wai
+                 , myhome-backend
+                 , monad-logger
+                 , persistent
+                 , mtl
+                 , persistent-mysql-haskell
+    hs-source-dirs: test
+    main-is: Spec.hs
+    type: exitcode-stdio-1.0
