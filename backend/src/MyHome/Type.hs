@@ -13,10 +13,12 @@ data Result a = Ok a | Err AppException
 data AppException = AppException !ErrorCode !Text
   deriving(Show, Typeable)
 
+
 data ErrorCode =
     ENoSuchUser
   | EInvalidPassword
   | EDatabaseERR
+  | EUsernameExists
   | EOther
   deriving(Show, Typeable)
 
@@ -24,10 +26,12 @@ instance ToJSON ErrorCode where
     toEncoding ENoSuchUser = toEncoding ("ENoSuchUser" :: Text)
     toEncoding EInvalidPassword = toEncoding ("EInvalidPassword" :: Text)
     toEncoding EDatabaseERR = toEncoding ("EDatabaseERR" :: Text)
+    toEncoding EUsernameExists = toEncoding ("EUsernameExists" :: Text)
     toEncoding EOther = toEncoding ("EOther" :: Text)
     toJSON ENoSuchUser = toJSON ("ENoSuchUser" :: Text)
     toJSON EInvalidPassword = toJSON ("EInvalidPassword" :: Text)
     toJSON EDatabaseERR = toJSON ("EDatabaseERR" :: Text)
+    toJSON EUsernameExists = toJSON ("EUsernameExists" :: Text)
     toJSON EOther = toJSON ("EOther" :: Text)
 
 instance ToJSON a => ToJSON (Result a) where

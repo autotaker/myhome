@@ -12,7 +12,6 @@ import Control.Monad.Reader
 
 info = mkMySQLConnectInfo "127.0.0.1" "myhome" "myhome" "myhome_test"
 
-
 main :: IO ()
 main = do
     runStdoutLoggingT $ withMySQLConn info (runSqlConn (runMigration migrateAll))
@@ -25,13 +24,28 @@ anyENoSuchUser :: Selector AppException
 anyENoSuchUser (AppException ENoSuchUser _) = True
 anyENoSuchUser_ = False
 
+anyEUsernameExists :: Selector AppException
+anyEUsernameExists (AppException EUsernameExists _) = True
+anyEUsernameExists _ = False
+
 spec :: Spec
 spec = before_ initDB $ do 
-    describe "signin" $
-        it "raises ENoSuchUser for not registered username" $ do
+    describe "signin" $ do
+        it "raises ENoSuchUser for not registered username" $ 
             (runNoLoggingT $ withMySQLConn info $ \conn ->
                 liftIO $ runSqlConn (signin LoginForm{ username = "testuser", password = "password"}) conn)
                 `shouldThrow` anyENoSuchUser
-
-
-            1 `shouldBe` 1
+        it "one can signin after signup" $ 
+            (runStderrLoggingT $ withMySQLConn info $ \conn ->
+                liftIO $ flip runSqlConn conn $ do
+                    let form = LoginForm{ username = "testuser", password = "password" }
+                    _ <- signup form
+                    auth <- signin form
+                    pure $ authUsername auth) `shouldReturn` "testuser"
+        it "cannot signup for existing username" $
+            (runStderrLoggingT $ withMySQLConn info $ \conn ->
+                liftIO $ flip runSqlConn conn $ do
+                    let form = LoginForm{ username = "testuser", password = "password" }
+                    _ <- signup form
+                    _ <- signup form
+                    pure ()) `shouldThrow` anyEUsernameExists                    

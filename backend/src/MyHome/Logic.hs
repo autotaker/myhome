@@ -22,7 +22,7 @@ hashPassword :: F.LoginForm -> Salt -> Except AuthError S.Auth
 hashPassword loginForm (Salt salt) = do
     let fPasswd = F.password loginForm
     unless (T.all isAscii fPasswd) $ throwError InvalidCharacterError 
-    unless (T.length fPasswd > 72) $ throwError TooLongPasswordError
+    unless (T.length fPasswd <= 72) $ throwError TooLongPasswordError
     let bPasswd = encodeUtf8 fPasswd
     hPasswd <- maybe (throwError InvalidSaltError) pure $ BCrypt.hashPassword bPasswd salt
     pure $ S.Auth{
