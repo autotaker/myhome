@@ -1,12 +1,14 @@
 export default {
-  hello () {
-    return fetch('http://localhost:3000/', {
+  async hello () {
+    const response = await fetch('http://localhost:3000/', {
       method: 'GET'
-    }).then(response => response.json())
+    });
+    return await response.json();
   },
-  dbtest () {
-    return fetch('http://localhost:3000/dbtest/select', {
+  async dbtest () {
+    const response = await fetch('http://localhost:3000/dbtest/select', {
       method: 'GET'
-    }).then(response => response.json())
+    });
+    return await response.json();
   }
 }

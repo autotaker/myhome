@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import DBTest from '@/components/DBTest'
 import Home from '@/components/Home'
+import Auth from '@/components/Auth'
 
 Vue.use(Router)
 

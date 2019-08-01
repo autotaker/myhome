@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+
     <nav>
       <ul>
         <router-link tag="li" to="/" exact> <a><strong>MyHome</strong></a></router-link>
@@ -7,14 +8,19 @@
         <router-link tag="li" to="/dbtest" exact> <a>DBTest</a></router-link>
       </ul>
     </nav>
+    <auth/>
+    
     <router-view/>
   </div>
 </template>
 
 <script>
-
+import Auth from '@/components/Auth'
 export default {
   name: 'app',
+  components: {
+    'auth': Auth
+  }
 }
 </script>
 
