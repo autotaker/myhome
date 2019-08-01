@@ -28,24 +28,63 @@ anyEUsernameExists :: Selector AppException
 anyEUsernameExists (AppException EUsernameExists _) = True
 anyEUsernameExists _ = False
 
+anyEInvalidPassword (AppException EInvalidPassword _) = True
+anyEInvalidPassword _ = False
+
 spec :: Spec
 spec = before_ initDB $ do 
     describe "signin" $ do
         it "raises ENoSuchUser for not registered username" $ 
-            (runNoLoggingT $ withMySQLConn info $ \conn ->
-                liftIO $ runSqlConn (signin LoginForm{ username = "testuser", password = "password"}) conn)
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                runSqlConn (signin LoginForm{ username = "testuser", password = "password"}) conn)
                 `shouldThrow` anyENoSuchUser
-        it "one can signin after signup" $ 
-            (runStderrLoggingT $ withMySQLConn info $ \conn ->
-                liftIO $ flip runSqlConn conn $ do
-                    let form = LoginForm{ username = "testuser", password = "password" }
+
+    describe "signup" $ do
+        it "doesn't accept non-ascii chars" $ do
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
+                    let form = LoginForm{ username = "testuser", password = "あいうえお" }
                     _ <- signup form
-                    auth <- signin form
-                    pure $ authUsername auth) `shouldReturn` "testuser"
+                    pure ()) `shouldThrow` anyEInvalidPassword
+        it "doesn't accept password longer than 72 characters" $ do
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
+                    let longpass = "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                                 <> "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                                 <> "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                    let form = LoginForm{ username = "testuser", password = longpass <> "A" }
+                    _ <- signup form
+                    pure ()) `shouldThrow` anyEInvalidPassword
+        it "accepts passwords no longer than 72 characters" $ do
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
+                    let longpass = "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                                 <> "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                                 <> "AAAAAAAA" <> "AAAAAAAA" <> "AAAAAAAA"
+                    let form = LoginForm{ username = "testuser", password = longpass }
+                    signup form
+                    pure ()) `shouldReturn` ()
         it "cannot signup for existing username" $
-            (runStderrLoggingT $ withMySQLConn info $ \conn ->
-                liftIO $ flip runSqlConn conn $ do
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
                     let form = LoginForm{ username = "testuser", password = "password" }
                     _ <- signup form
                     _ <- signup form
                     pure ()) `shouldThrow` anyEUsernameExists                    
+
+    describe "signin/signup" $ do
+        it "one can signin after signup" $ 
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
+                    let form = LoginForm{ username = "testuser", password = "password" }
+                    _ <- signup form
+                    auth <- signin form
+                    pure $ authUsername auth) `shouldReturn` "testuser"
+
+        it "raise an EInvalidPassword when user signins with invalid password" $ 
+            (runStdoutLoggingT $ withMySQLConn info $ \conn ->
+                flip runSqlConn conn $ do
+                    let form = LoginForm{ username = "testuser", password = "password" }
+                        form' = LoginForm{ username = "testuser", password = "wrong" }
+                    _ <- signup form
+                    signin form') `shouldThrow` anyEInvalidPassword

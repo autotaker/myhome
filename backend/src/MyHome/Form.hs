@@ -16,7 +16,11 @@ instance ToJSON HelloForm where
 instance FromJSON HelloForm
 
 data LoginForm = LoginForm { username :: !Strict.Text, password :: !Strict.Text }
-    deriving(Show, Eq, Ord, Generic)
+    deriving(Eq, Ord, Generic)
+
+instance Show LoginForm where
+    show LoginForm{username = username} =
+        "LoginForm{username=" ++ show username ++ ",password=**secured**}"
 
 instance ToJSON LoginForm where
     toEncoding = genericToEncoding defaultOptions
