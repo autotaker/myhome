@@ -7,8 +7,7 @@
       <div>
         <label>Password: <input v-model="password" type="password" name="password"></label>
       </div>
-      <button v-on:click="signin">Sign in</button>
-      <button v-on:click="signup">Sign up</button>
+      <button v-on:click="submit" type="button">{{ authType }}</button>
     </form>
   </div>
 </template>
@@ -17,12 +16,20 @@
 import auth from '@/api/auth.js'
 export default {
   name: 'Auth',
+  props: ['authType'],
+  data() {
+    return {
+      username: '',
+      password: '',
+    };
+  },
   methods: {
-    signin() {
-      auth.signin(this.username, this.password);
-    },
-    signup() {
-      auth.signup(this.username, this.password);
+    submit() {
+      if( this.authType === 'signin' ) {
+        auth.signin(this.username, this.password);
+      }else {
+        auth.signup(this.username, this.password);
+      }
     }
   }
 }

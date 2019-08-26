@@ -52,7 +52,7 @@ runDB = Spock.runQuery . runSqlConn
 runLogic :: forall a. ReaderT SqlBackend (LoggingT IO) a -> Spock.SpockAction SqlBackend MySession MyAppState a
 runLogic action = do
     logger <- appLogger <$> Spock.getState 
-    Spock.runQuery (\conn -> runLoggingT (runReaderT action conn) logger)
+    Spock.runQuery (\conn -> runLoggingT (runSqlConn action conn) logger)
 
 scottyMain :: Spock.SpockM SqlBackend MySession MyAppState ()
 scottyMain = do
@@ -68,6 +68,7 @@ scottyMain = do
     Spock.post "/dbtest/insert" $ do
         HelloForm{message = msg} <- Spock.jsonBody'
         runDB $ void $ insert (Hello msg)
+        Spock.json ()
     Spock.post "/auth/signin" $ do
         form <- Spock.jsonBody'
         auth <- runLogic $ signin form 
@@ -77,7 +78,7 @@ scottyMain = do
     Spock.post "/auth/signup" $ do
         form <- Spock.jsonBody'
         auth <- runLogic $ signup form
-        pure ()
+        Spock.json ()
     Spock.post "/auth/signout" $ do
         Spock.writeSession Guest
         Spock.json ()

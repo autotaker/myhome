@@ -2,13 +2,18 @@
   <div id="app">
 
     <nav>
-      <ul>
+      <ul class="nav-left">
         <router-link tag="li" to="/" exact> <a><strong>MyHome</strong></a></router-link>
         <router-link tag="li" to="/hello" exact> <a>Hello</a></router-link>
         <router-link tag="li" to="/dbtest" exact> <a>DBTest</a></router-link>
       </ul>
+      <ul>
+        <li><a v-on:click="showSignin">Signin</a></li>
+        <li><a v-on:click="showSignup">Signup</a></li>
+      </ul>
     </nav>
-    <auth/>
+    
+    <auth v-bind:class="{ hidden: isHidden }" v-bind:auth-type="authType" />
     
     <router-view/>
   </div>
@@ -20,6 +25,20 @@ export default {
   name: 'app',
   components: {
     'auth': Auth
+  },
+  data() {
+    return { 'isHidden': true,
+             authType: 'signin' }
+  },
+  methods: {
+    showSignin () {
+      this.isHidden = false;
+      this.authType = 'signin';
+    },
+    showSignup () {
+      this.isHidden = false;
+      this.authType = 'signup'
+    }
   }
 }
 </script>
@@ -34,6 +53,15 @@ export default {
 }
 nav {
   background-color: #4fc08d;
+}
+.nav-left {
+  margin-right: auto;
+}
+.hidden {
+  display: none;
+}
+nav {
+  display: flex;
 }
 nav ul {
   display: flex;
