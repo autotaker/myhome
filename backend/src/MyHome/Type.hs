@@ -42,4 +42,11 @@ instance ToJSON a => ToJSON (Result a) where
         object ["error" .= code, "reason" .= reason]
     toJSON (Ok a) = toJSON a
 
+instance ToJSON AppException where
+    toEncoding (AppException code reason) = 
+        pairs ("error" .= code <> "reason" .= reason)
+    toJSON (AppException code reason) =
+        object ["error" .= code, "reason" .= reason]
+
+
 instance Exception AppException

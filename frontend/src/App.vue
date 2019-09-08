@@ -1,51 +1,81 @@
 <template>
   <div id="app">
-
     <nav>
       <ul class="nav-left">
-        <router-link tag="li" to="/" exact> <a><strong>MyHome</strong></a></router-link>
-        <router-link tag="li" to="/hello" exact> <a>Hello</a></router-link>
-        <router-link tag="li" to="/dbtest" exact> <a>DBTest</a></router-link>
+        <router-link tag="li" to="/" exact>
+          <a>
+            <strong>MyHome</strong>
+          </a>
+        </router-link>
+        <router-link tag="li" to="/hello" exact>
+          <a>Hello</a>
+        </router-link>
+        <router-link tag="li" to="/dbtest" exact>
+          <a>DBTest</a>
+        </router-link>
       </ul>
       <ul>
-        <li><a v-on:click="showSignin">Signin</a></li>
-        <li><a v-on:click="showSignup">Signup</a></li>
+        <template v-if="authenticated">
+          <a>{{ username }}</a>
+          <button v-on:click="signout">Signout</button>
+        </template>
+        <template v-else>
+          <li>
+            <popper trigger="click" :options="{ placement: 'left' }">
+              <auth class="popper" auth-type="signin" v-on:signined="onSignin" />
+              <button slot="reference">Signin</button>
+            </popper>
+          </li>
+          <li>
+            <popper trigger="click" :options="{ placement: 'left' }">
+              <auth class="popper" auth-type="signup" v-on:signuped="onSignup"/>
+              <button slot="reference">Signup</button>
+            </popper>
+          </li>
+        </template>
       </ul>
     </nav>
-    
-    <auth v-bind:class="{ hidden: isHidden }" v-bind:auth-type="authType" />
-    
-    <router-view/>
+    <notifications group="main" position="top center" />
+
+    <router-view />
   </div>
 </template>
 
 <script>
-import Auth from '@/components/Auth'
+import Auth from "@/components/Auth";
+import AuthAPI from "@/api/auth.js"
+import Popper from "vue-popperjs";
+import "vue-popperjs/dist/vue-popper.css";
 export default {
-  name: 'app',
+  name: "app",
   components: {
-    'auth': Auth
+    auth: Auth,
+    popper: Popper
   },
   data() {
-    return { 'isHidden': true,
-             authType: 'signin' }
+    return { isHidden: true, authenticated: false, username: '' };
   },
   methods: {
-    showSignin () {
-      this.isHidden = false;
-      this.authType = 'signin';
+    onSignin(authUser) {
+      console.log('onSignin');
+      this.username = authUser;
+      this.authenticated = true;
+      return;
     },
-    showSignup () {
-      this.isHidden = false;
-      this.authType = 'signup'
+    onSignup(authUser) {
+      console.log('onSignup');
+    },
+    async signout() {
+      await AuthAPI.signout()
+      this.authenticated = false;
     }
   }
-}
+};
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

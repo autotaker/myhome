@@ -3,9 +3,10 @@ import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import DBTest from '@/components/DBTest'
 import Home from '@/components/Home'
-import Auth from '@/components/Auth'
+import Notifications from 'vue-notification'
 
 Vue.use(Router)
+Vue.use(Notifications)
 
 export default new Router({
   routes: [

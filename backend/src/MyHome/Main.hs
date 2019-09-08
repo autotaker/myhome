@@ -27,6 +27,7 @@ import Data.Text.Lazy(Text, fromStrict)
 import qualified Data.Text as Strict
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai(Middleware)
+import Network.HTTP.Types.Status
 import MyHome.Schema
 import MyHome.Form
 import MyHome.Logic
@@ -34,6 +35,7 @@ import MyHome.Type
 import MyHome.Service
 import Control.Monad
 import Control.Monad.Catch
+import Control.Monad.Trans.Control
 import Control.Monad.IO.Unlift
 import Data.Typeable
 import Database.MySQL.Base(ERRException)
@@ -54,6 +56,15 @@ runLogic action = do
     logger <- appLogger <$> Spock.getState 
     Spock.runQuery (\conn -> runLoggingT (runSqlConn action conn) logger)
 
+catchAppException :: Spock.SpockAction SqlBackend MySession MyAppState () -> Spock.SpockAction SqlBackend MySession MyAppState ()
+catchAppException m = 
+    liftWith (\run -> 
+        liftWith (\run' -> 
+            (run' (run m) `catch` (\e -> run' (run (do
+                Spock.setStatus badRequest400
+                Spock.json (e :: AppException)))))) 
+            >>= restoreT . pure) >>= restoreT . pure
+
 scottyMain :: Spock.SpockM SqlBackend MySession MyAppState ()
 scottyMain = do
     Spock.get "/" $ do
@@ -65,21 +76,21 @@ scottyMain = do
     Spock.get "/dbtest/select" $ do
         msg <- runDB $ map entityVal <$> selectList [] []
         Spock.json $ (msg :: [Hello])
-    Spock.post "/dbtest/insert" $ do
+    Spock.post "/dbtest/insert" $ catchAppException $ do
         HelloForm{message = msg} <- Spock.jsonBody'
         runDB $ void $ insert (Hello msg)
         Spock.json ()
-    Spock.post "/auth/signin" $ do
+    Spock.post "/auth/signin" $ catchAppException $ do
         form <- Spock.jsonBody'
         auth <- runLogic $ signin form 
         Spock.sessionRegenerateId
         Spock.modifySession (const (Authorized (authUsername auth)))
         Spock.json () 
-    Spock.post "/auth/signup" $ do
+    Spock.post "/auth/signup" $ catchAppException $ do
         form <- Spock.jsonBody'
         auth <- runLogic $ signup form
         Spock.json ()
-    Spock.post "/auth/signout" $ do
+    Spock.post "/auth/signout" $ catchAppException $ do
         Spock.writeSession Guest
         Spock.json ()
 

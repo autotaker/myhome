@@ -42,6 +42,8 @@ library
                      , bytestring
                      , wai
                      , unliftio-core
+                     , monad-control
+                     , http-types
                      , bcrypt ^>= 0.0.11
   hs-source-dirs:      src
   default-language:    Haskell2010

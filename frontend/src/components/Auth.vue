@@ -24,11 +24,33 @@ export default {
     };
   },
   methods: {
-    submit() {
+    submit: async function() {
       if( this.authType === 'signin' ) {
-        auth.signin(this.username, this.password);
+        try {
+          await auth.signin(this.username, this.password);
+          this.$emit('signined', this.username);
+        } catch(err) {
+          this.$notify({
+            group: 'main',
+            type: 'error',
+            title: 'Signin Failed',
+            text: err.message
+          });
+        }        
       }else {
-        auth.signup(this.username, this.password);
+        try {
+          await auth.signup(this.username, this.password);
+          console.log(this.username);
+          this.$emit('signuped', this.username);
+        } catch(err) {
+          this.$notify({
+            group: 'main',
+            type: 'error',
+            title: 'Signup Failed',
+            text: err.message
+          });
+        }
+        
       }
     }
   }
@@ -38,7 +60,7 @@ export default {
 <style scoped>
 .auth {
   width: 300px;
-  height: 300px;
+  background-color: #cccccc
 }
 </style>
 
